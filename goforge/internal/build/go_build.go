@@ -118,6 +118,15 @@ func GetPlatformTag() string {
 }
 
 func GetPythonTag() string {
+	cmd := exec.Command("python3", "-c", "import sys; print(f'cp{sys.version_info.major}{sys.version_info.minor}')")
+	out, err := cmd.Output()
+	if err != nil {
+		return "cp39"
+	}
+	tag := strings.TrimSpace(string(out))
+	if len(tag) > 0 {
+		return tag
+	}
 	return "cp39"
 }
 

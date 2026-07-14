@@ -125,8 +125,7 @@ goforge/
 │   ├── bindings/           # Go parser + Python code generator
 │   ├── build/              # Build system (Go + wheel)
 │   └── config/             # Config loader (pyproject.toml)
-├── templates/              # (reserved)
-└── tests/                  # (reserved)
+└── tests/                  # Unit tests
 ```
 
 ### User Project Structure

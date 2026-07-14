@@ -156,15 +156,21 @@ func (w *WheelBuilder) addRecord(zw *zip.Writer) error {
 	if err != nil {
 		return err
 	}
-	
-	_, err = f.Write([]byte(",,\n"))
+
+	record := fmt.Sprintf("%s-%s.dist-info/METADATA,,\n%s-%s.dist-info/WHEEL,,\n%s-%s.dist-info/RECORD,,\n",
+		w.Config.PkgName, w.Config.Version,
+		w.Config.PkgName, w.Config.Version,
+		w.Config.PkgName, w.Config.Version,
+	)
+
+	_, err = f.Write([]byte(record))
 	return err
 }
 
 func (w *WheelBuilder) Install(venvDir string) error {
 	libDir := filepath.Join(venvDir, "lib")
-	
-	pythonVersion := "python3.9"
+
+	pythonVersion := GetPythonVersion()
 	targetDir := filepath.Join(libDir, pythonVersion, "site-packages", w.Config.PkgName)
 	
 	if err := os.MkdirAll(targetDir, 0755); err != nil {

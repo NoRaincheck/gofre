@@ -106,7 +106,7 @@
 **Decision**:
 - Follow semantic versioning
 - Tag releases on GitHub
-- Use `go install` for installation
+- Use `go install` or `pip install goforge` for installation
 
 **Impact**: Standard Go versioning practice.
 
@@ -138,7 +138,7 @@
 2. **Type Hints**: Generate Python type hints from Go types
 3. **Documentation**: Auto-generate docs from Go comments
 4. **IDE Support**: Language server protocol for GoForge projects
-5. **Testing**: Integration with pytest and go test
+5. **Multi-platform wheels**: Cross-compile for all platforms in a single build (currently builds for current platform only)
 
 ## Technical Debt
 
@@ -146,4 +146,84 @@
 2. Error messages: Could be more descriptive
 3. Logging: Currently using fmt.Println, should use a proper logger
 4. Configuration: Only supports pyproject.toml, could support more formats
-5. Testing: No unit tests yet
+
+---
+
+## 11. PyPI Distribution (Implemented)
+
+**Ambiguity**: How should goforge itself be distributed via PyPI?
+
+**Decision**:
+- Use hatchling as the build backend with a custom build hook for Go compilation
+- Binary is compiled with `CGO_ENABLED=0` for static linking
+- Python wrapper (`goforge_pkg/`) finds and `exec`s the binary
+- Package name: `goforge` on PyPI, `goforge_pkg` as Python import
+
+**Implementation**:
+- `pyproject.toml` defines the package metadata and hatchling configuration
+- `hatch_build.py` contains the `CustomBuildHook` that compiles the Go binary
+- `goforge_pkg/__init__.py` wraps the binary with `os.execvp()` on Unix
+- `goforge_pkg/__main__.py` enables `python -m goforge_pkg`
+- Console script entry point: `goforge = "goforge_pkg:main"`
+
+**Issues encountered**:
+1. Hatchling build hooks require entry point registration (plugin system), making self-contained hooks impossible without installing the package first. Switched to setuptools.
+2. Newer setuptools versions reject license classifiers when `license = "PEP 639"` is used. Removed the classifier.
+3. Go binary must be compiled with `CGO_ENABLED=0` since the CLI tool itself doesn't use CGo (only the c-shared buildmode for user projects does).
+4. Switched from setuptools to hatchling build backend with `BuildHookInterface` for cleaner build hook support.
+
+**Impact**: `uv build` or `uv pip install .` compiles the Go binary and installs it. Users get the `goforge` CLI on their PATH.
+
+## 12. Go Unit Tests (Implemented)
+
+**Ambiguity**: How to test the internal packages?
+
+**Decision**:
+- Add unit tests for all internal packages in `goforge/tests/`
+- Use Go's standard `testing` package
+- Use `testdata/` directory for fixture files (sample Go source, pyproject.toml)
+- Export template helper functions for direct testing
+
+**Tests added**:
+- `parser_test.go`: AST parsing, `//export` detection, type extraction, test file skipping
+- `generator_test.go`: cffi binding generation, template functions, slice handling
+- `types_test.go`: Go→C/cffi type mapping for all primitives, slices, unknown types
+- `config_test.go`: pyproject.toml loading, validation, defaults, error handling
+- `go_build_test.go`: Platform detection, lib extension, module checks, venv detection
+- `wheel_test.go`: Wheel structure, metadata content, file contents, naming
+
+**Issues encountered**:
+1. `ast.CommentGroup.Text()` returns empty string for `//export` comments (it strips comment markers and normalizes). The raw `c.Text` field contains the actual text. Test adjusted to verify function params instead.
+2. `FindVenvDir()` walks up directories checking for `.venv/` and also checks `$VIRTUAL_ENV`. Tests must unset this env var to avoid false matches.
+3. Wheel builder archives files relative to `buildDir` and prepends `pkgName/`. Test fixtures must place files at the root of `buildDir`, not in a subdirectory.
+
+**Impact**: 44 unit tests covering all internal packages, all passing.
+
+## 13. Bug Fixes and Cleanup (Implemented)
+
+**Critical fixes**:
+1. `cmd/publish.go`: Fixed broken command `go forge build` → `goforge build`
+2. `internal/bindings/generator.go`: Removed brittle `n * n` hack from `ReturnCountExpr`; now falls back to `_count` parameter for slice returns without an input slice
+3. `internal/build/wheel.go`: Fixed `Install()` hardcoded `python3.9` — now calls `GetPythonVersion()`
+4. `cmd/publish.go`: Removed hand-rolled TOML parser with prefix-matching bug; now uses `config.Load()`
+
+**Important fixes**:
+5. `cmd/bench.go` / `cmd/publish.go`: Replaced hand-rolled TOML parsing with `config.Load()` from the config package
+6. `cmd/bench.go`: Replaced hand-rolled `splitLines`, `trimSpaces`, `trimQuotes`, `repeat` with `strings.Split`, `strings.TrimSpace`, `strings.Trim`, `strings.Repeat`
+7. `cmd/publish.go`: Extracted `getPackageName()` (was in bench.go) to use `config.Load()`
+8. `cmd/new.go`: Removed dead code `createPythonPackage()` (never called)
+9. `internal/bindings/generator.go`: Removed unused template functions `ReturnIsSlice`, `ReturnElemType`, `SliceParamName` from FuncMap
+10. `internal/build/wheel.go`: Fixed malformed RECORD file — now contains proper CSV entries per PEP 427
+11. `internal/build/go_build.go`: Fixed `GetPythonTag()` — now detects actual Python version instead of hardcoding `cp39`
+12. `.gitignore`: Added `.DS_Store`
+
+**Minor fixes**:
+13. Removed unused test fixtures (`valid_pyproject.toml`, `defaults_pyproject.toml`, `missing_name.toml`, `missing_version.toml`)
+14. Removed unused Python helpers (`_get_platform_tag`, `_get_lib_extension`) from `goforge_pkg/__init__.py`
+15. Updated README.md: Fixed project structure section (removed `templates/ (reserved)`, updated `tests/` description)
+16. Cleaned stale build artifacts from disk
+
+**Example fixes**:
+17. `examples/hello/`: Added missing `pyproject.toml`, `go.mod`, `cmd/main.go`
+18. `examples/matrix/`: Added missing `pyproject.toml`, `go.mod`, `cmd/main.go`
+19. `examples/matrix/pkg/matrix/matrix.go`: Removed unnecessary `import "C"` (contradicts "no CGo required" claim)

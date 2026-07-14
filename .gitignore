@@ -1,7 +1,7 @@
 # Generated build artifacts
-output/
-build/
-dist/
+/output/
+/build/
+/dist/
 
 # Compiled shared libraries
 *.dylib
@@ -14,5 +14,9 @@ __pycache__/
 *.pyo
 *.egg-info/
 
+# macOS
+.DS_Store
+
 # Go
 goforge/goforge
+goforge_pkg/bin/

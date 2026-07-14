@@ -144,23 +144,6 @@ var _ = unsafe.Pointer(nil)
 	return os.WriteFile(filepath.Join(cmdDir, "main.go"), []byte(content), 0644)
 }
 
-func createPythonPackage(dir string) error {
-	pkgName := strings.ReplaceAll(dir, "-", "_")
-	pkgDir := filepath.Join(dir, pkgName)
-	if err := os.MkdirAll(pkgDir, 0755); err != nil {
-		return err
-	}
-	
-	content := fmt.Sprintf(`"""%s - A Python package with Go extensions"""
-
-from ._binding import Add, Multiply
-
-__all__ = ["Add", "Multiply"]
-__version__ = "0.1.0"
-`, dir)
-	return os.WriteFile(filepath.Join(pkgDir, "__init__.py"), []byte(content), 0644)
-}
-
 func createReadme(dir string) error {
 	content := fmt.Sprintf(`# %s
 

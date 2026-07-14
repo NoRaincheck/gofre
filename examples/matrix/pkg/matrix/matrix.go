@@ -1,7 +1,5 @@
 package core
 
-import "C"
-
 //export MatrixMultiply
 func MatrixMultiply(a, b []float64, n int64) []float64 {
 	result := make([]float64, n*n)
