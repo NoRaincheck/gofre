@@ -1,0 +1,15 @@
+[build-system]
+requires = ["goforge>=0.1.0"]
+build-backend = "goforge.build"
+
+[project]
+name = "test-project"
+version = "1.2.3"
+description = "A test project"
+requires-python = ">=3.8"
+dependencies = ["cffi>=1.0.0"]
+
+[tool.goforge]
+module = "github.com/user/test-project"
+bindings = "cffi"
+pkg-dir = "pkg/core"
