@@ -1,0 +1,18 @@
+# Generated build artifacts
+output/
+**/build/
+**/dist/
+
+# Compiled shared libraries
+*.dylib
+*.so
+*.dll
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Go
+goforge/goforge
