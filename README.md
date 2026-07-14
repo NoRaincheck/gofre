@@ -143,20 +143,6 @@ my-package/
 
 Build artifacts go to `build/` and `dist/` by default. Use `--output-dir` to put them elsewhere.
 
-### Repository Layout
-
-```
-grackin/
-├── goforge/                # The CLI tool
-├── examples/               # Example projects (source only)
-│   ├── hello/
-│   ├── benchmark/
-│   └── matrix/
-└── output/                 # Generated build artifacts (gitignored)
-    ├── benchmark/
-    └── hello/
-```
-
 ## How It Works
 
 1. **Parse**: GoForge parses your Go source files to find exported functions
