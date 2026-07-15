@@ -7,6 +7,7 @@ package httpbridge
 */
 import "C"
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/NoRaincheck/gofre/internal/gomod/json"
@@ -39,6 +40,20 @@ func HTTPAddRoute(serverID C.int, method *C.char, path *C.char, handlerID C.int)
 	if s != nil {
 		s.Handle(m, p, nil)
 	}
+}
+
+//export HTTPStartServer
+func HTTPStartServer(serverID C.int, addr *C.char) {
+	a := C.GoString(addr)
+	s := GetServer(int(serverID))
+	if s == nil {
+		return
+	}
+	go func() {
+		if err := s.ListenAndServe(a); err != nil {
+			fmt.Printf("HTTP server error: %v\n", err)
+		}
+	}()
 }
 
 func init() {

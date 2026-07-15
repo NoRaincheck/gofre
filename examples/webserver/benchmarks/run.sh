@@ -142,6 +142,7 @@ main() {
     printf "flask\t8084\tpython3 %s/server_flask.py\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
     printf "pure_go\t8085\t%s/server_pure_go\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
     printf "pocketpy\t8086\t%s\n" "$POCKETPY_BINARY" >> "$SERVERS_FILE"
+    printf "cpython_gohttp\t8087\tpython3 %s/server_cpython_gohttp.py\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
 
     # Tests: name<TAB>method<TAB>path<TAB>body
     printf "plaintext\tGET\t/plaintext\t0\n" > "$TESTS_FILE"
