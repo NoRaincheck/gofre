@@ -1,3 +1,5 @@
+//go:build !no_pocketpy
+
 // Package pocketpy provides a Go wrapper for the pocketpy C API.
 //
 // The amalgamated pocketpy.c and pocketpy.h files are generated from

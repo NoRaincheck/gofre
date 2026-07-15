@@ -1,4 +1,4 @@
-//go:build !cffi
+//go:build !cffi && !no_pocketpy
 
 package jsonbridge
 

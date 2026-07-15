@@ -1,3 +1,5 @@
+//go:build !no_pocketpy
+
 package pocketpy
 
 import "sync"
