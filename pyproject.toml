@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gofre"
-version = "0.1.0"
+version = "0.1.1"
 description = "Build system for creating Python packages that bundle Go binaries."
 readme = "README.md"
 requires-python = ">=3.9"

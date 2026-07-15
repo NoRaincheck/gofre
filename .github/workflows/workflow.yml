@@ -48,22 +48,9 @@ jobs:
           name: dist
           path: dist/
 
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      pyproject: ${{ steps.filter.outputs.pyproject }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            pyproject:
-              - 'pyproject.toml'
-
   publish:
-    needs: [test, build, changes]
-    if: ${{ !cancelled() && needs.changes.outputs.pyproject == 'true' }}
+    needs: [test, build]
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -85,7 +72,6 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Publish to PyPI
-        run: uv publish
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
