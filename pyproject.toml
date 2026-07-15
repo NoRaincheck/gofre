@@ -5,13 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "gofre"
 version = "0.1.0"
-description = "Build system for creating Python packages that bundle Go binaries"
+description = "Build system for creating Python packages that bundle Go binaries."
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
-authors = [
-    { name = "GoFre Contributors" }
-]
+authors = []
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
