@@ -13,3 +13,4 @@ dependencies = ["cffi>=1.0.0"]
 module = "github.com/user/test-project"
 bindings = "cffi"
 pkg-dir = "pkg/core"
+build-tags = ["no_pocketpy"]

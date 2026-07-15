@@ -210,6 +210,44 @@ binaries = ["cli", "server", "worker"]
 	}
 }
 
+func TestLoadBuildTags(t *testing.T) {
+	cfg, err := config.Load("testdata")
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	if len(cfg.Tool.GoForge.BuildTags) != 1 {
+		t.Fatalf("expected 1 build tag, got %d", len(cfg.Tool.GoForge.BuildTags))
+	}
+	if cfg.Tool.GoForge.BuildTags[0] != "no_pocketpy" {
+		t.Errorf("expected 'no_pocketpy', got '%s'", cfg.Tool.GoForge.BuildTags[0])
+	}
+}
+
+func TestLoadBuildTagsDefault(t *testing.T) {
+	tmpDir := t.TempDir()
+	pyproject := filepath.Join(tmpDir, "pyproject.toml")
+	content := `[project]
+name = "no-tags"
+version = "1.0.0"
+
+[tool.goforge]
+module = "github.com/user/no-tags"
+`
+	if err := os.WriteFile(pyproject, []byte(content), 0644); err != nil {
+		t.Fatalf("failed to write pyproject.toml: %v", err)
+	}
+
+	cfg, err := config.Load(tmpDir)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	if len(cfg.Tool.GoForge.BuildTags) != 0 {
+		t.Errorf("expected 0 build tags by default, got %d", len(cfg.Tool.GoForge.BuildTags))
+	}
+}
+
 func TestValidationErrorString(t *testing.T) {
 	err := &config.ValidationError{Field: "name", Message: "is required"}
 	expected := "name: is required"
