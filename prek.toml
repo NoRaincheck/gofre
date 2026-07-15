@@ -1,0 +1,32 @@
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "ruff-fmt"
+name = "ruff-fmt"
+description = "Format Python code with ruff"
+entry = "ruff format"
+language = "system"
+types = ["python"]
+args = ["--config", "pyproject.toml"]
+pass_filenames = true
+
+[[repos.hooks]]
+id = "ruff-lint"
+name = "ruff-lint"
+description = "Lint Python code with ruff (check + fix)"
+entry = "ruff check --fix"
+language = "system"
+types = ["python"]
+args = ["--config", "pyproject.toml"]
+pass_filenames = true
+
+[[repos.hooks]]
+id = "deno-fmt"
+name = "deno-fmt"
+description = "Format JSON and Markdown with deno"
+entry = "deno fmt"
+language = "system"
+types_or = ["json", "markdown"]
+args = ["--config", "deno.json"]
+pass_filenames = true

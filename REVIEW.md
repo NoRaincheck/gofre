@@ -5,6 +5,7 @@
 **Ambiguity**: How to handle Go slices in Python bindings?
 
 **Decision**: Use cffi's buffer protocol for slices. The generated binding will:
+
 - Accept Python lists, arrays, or numpy arrays
 - Convert to C arrays automatically
 - Return slices as Python lists
@@ -15,7 +16,8 @@
 
 **Ambiguity**: How to handle Go panics and errors?
 
-**Decision**: 
+**Decision**:
+
 - Go panics are caught and converted to Python exceptions
 - Go error types are mapped to Python exceptions
 - Return codes can be used for error signaling
@@ -27,6 +29,7 @@
 **Ambiguity**: Who manages memory for returned slices?
 
 **Decision**:
+
 - For simple types: Go runtime manages memory
 - For slices: Return copies, not references
 - Users must not hold references after function returns
@@ -38,6 +41,7 @@
 **Ambiguity**: How to handle Go strings?
 
 **Decision**:
+
 - Go strings are passed as C strings (char*)
 - Encoding: UTF-8
 - Null-terminated strings required
@@ -49,6 +53,7 @@
 **Ambiguity**: Is the Go runtime thread-safe?
 
 **Decision**:
+
 - Go's goroutine scheduler is thread-safe
 - Python's GIL limits true parallelism
 - For multi-threaded Python, use separate Go instances
@@ -60,6 +65,7 @@
 **Ambiguity**: How to include Go binaries in Python packages?
 
 **Decision**:
+
 - Binaries are compiled and included in the wheel
 - Python wrapper scripts call binaries via subprocess
 - Console scripts can be defined in pyproject.toml
@@ -71,6 +77,7 @@
 **Ambiguity**: How to handle hot-reload during development?
 
 **Decision**:
+
 - `goforge develop` builds and symlinks to venv
 - Changes to Go code require re-running `goforge develop`
 - No automatic rebuild on file changes
@@ -82,6 +89,7 @@
 **Ambiguity**: How to build for multiple platforms?
 
 **Decision**:
+
 - Use `GOOS` and `GOARCH` environment variables
 - GoForge detects current platform for wheel tags
 - Cross-compilation supported via environment variables
@@ -93,6 +101,7 @@
 **Ambiguity**: How to ensure Linux wheels are manylinux compliant?
 
 **Decision**:
+
 - Use manylinux2014 as the minimum
 - Provide Docker images for building
 - Document manual build process
@@ -104,6 +113,7 @@
 **Ambiguity**: How to version the GoForge tool itself?
 
 **Decision**:
+
 - Follow semantic versioning
 - Tag releases on GitHub
 - Use `go install` or `pip install goforge` for installation
@@ -115,6 +125,7 @@
 **Ambiguity**: How should goforge itself be distributed via PyPI?
 
 **Decision**:
+
 - Python wrapper (`goforge_pkg/`) finds and `exec`s the Go binary
 - Binary is compiled with `CGO_ENABLED=0` for static linking
 - setuptools with custom `build_py` command (not hatchling — build hooks require plugin registration)
@@ -126,23 +137,19 @@
 
 ### Q1: Should we support Go modules with replace directives?
 
-**Status**: Not implemented yet
-**Impact**: May affect builds in workspaces
+**Status**: Not implemented yet **Impact**: May affect builds in workspaces
 
 ### Q2: How to handle circular dependencies?
 
-**Status**: Not implemented yet
-**Impact**: May cause build failures
+**Status**: Not implemented yet **Impact**: May cause build failures
 
 ### Q3: Should we support Go plugins?
 
-**Status**: Not implemented yet
-**Impact**: Would enable dynamic loading
+**Status**: Not implemented yet **Impact**: Would enable dynamic loading
 
 ### Q4: How to handle large binary outputs?
 
-**Status**: Not implemented yet
-**Impact**: May need special packaging
+**Status**: Not implemented yet **Impact**: May need special packaging
 
 ## Future Considerations
 
@@ -150,7 +157,8 @@
 2. **Type Hints**: Generate Python type hints from Go types
 3. **Documentation**: Auto-generate docs from Go comments
 4. **IDE Support**: Language server protocol for GoForge projects
-5. **Multi-platform wheels**: Cross-compile for all platforms in a single build (currently builds for current platform only)
+5. **Multi-platform wheels**: Cross-compile for all platforms in a single build (currently builds for current platform
+   only)
 
 ## Technical Debt
 

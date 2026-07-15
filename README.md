@@ -1,6 +1,7 @@
 # GoForge
 
-A build system for creating Python packages with Go extensions, inspired by [maturin](https://github.com/PyO3/maturin) for Rust/Python.
+A build system for creating Python packages with Go extensions, inspired by [maturin](https://github.com/PyO3/maturin)
+for Rust/Python.
 
 ## Features
 
@@ -67,52 +68,53 @@ print(result)  # 5
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `goforge new <name>` | Create a new project |
-| `goforge build` | Build the package |
+| Command                  | Description                        |
+| ------------------------ | ---------------------------------- |
+| `goforge new <name>`     | Create a new project               |
+| `goforge build`          | Build the package                  |
 | `goforge build -o <dir>` | Build with custom output directory |
-| `goforge develop` | Build and install in current venv |
-| `goforge publish` | Publish to PyPI |
-| `goforge bench` | Run benchmarks |
+| `goforge develop`        | Build and install in current venv  |
+| `goforge publish`        | Publish to PyPI                    |
+| `goforge bench`          | Run benchmarks                     |
 
 ## Benchmarks
 
 GoForge provides significant performance improvements over pure Python by leveraging Go's performance.
 
-**Note**: The overhead of FFI calls means that very simple operations (like `sum()`) may not benefit from Go extensions. GoForge shines for complex computational workloads.
+**Note**: The overhead of FFI calls means that very simple operations (like `sum()`) may not benefit from Go extensions.
+GoForge shines for complex computational workloads.
 
 ### fibonacci(30) - Recursive Implementation
 
-| Implementation | Time | Speedup |
-|----------------|------|---------|
-| Pure Python | 175.1 ms | 1.0x |
-| GoForge | 3.0 ms | **58x** |
+| Implementation | Time     | Speedup |
+| -------------- | -------- | ------- |
+| Pure Python    | 175.1 ms | 1.0x    |
+| GoForge        | 3.0 ms   | **58x** |
 
 ### count_primes(100,000)
 
-| Implementation | Time | Speedup |
-|----------------|------|---------|
-| Pure Python | 97.9 ms | 1.0x |
-| GoForge | 1.5 ms | **63x** |
+| Implementation | Time    | Speedup |
+| -------------- | ------- | ------- |
+| Pure Python    | 97.9 ms | 1.0x    |
+| GoForge        | 1.5 ms  | **63x** |
 
 ### matrix_multiply(50x50)
 
-| Implementation | Time | Speedup |
-|----------------|------|---------|
-| Pure Python | 14.8 ms | 1.0x |
-| GoForge | 0.6 ms | **24x** |
+| Implementation | Time    | Speedup |
+| -------------- | ------- | ------- |
+| Pure Python    | 14.8 ms | 1.0x    |
+| GoForge        | 0.6 ms  | **24x** |
 
 ### Real-World Benchmarks
 
 Based on [programming-language-benchmarks](https://programming-language-benchmarks.vercel.app/go-vs-python):
 
-| Benchmark | Pure Python | Go Forge | Speedup |
-|-----------|-------------|----------|---------|
-| binarytrees(18) | >30s | 2.3s | **>13x** |
-| fasta(2.5M) | 4.7s | 0.12s | **39x** |
-| knucleotide | >30s | 0.68s | **>44x** |
-| json-serde | 1.9s | 0.14s | **14x** |
+| Benchmark       | Pure Python | Go Forge | Speedup  |
+| --------------- | ----------- | -------- | -------- |
+| binarytrees(18) | >30s        | 2.3s     | **>13x** |
+| fasta(2.5M)     | 4.7s        | 0.12s    | **39x**  |
+| knucleotide     | >30s        | 0.68s    | **>44x** |
+| json-serde      | 1.9s        | 0.14s    | **14x**  |
 
 ## Project Structure
 
@@ -166,13 +168,13 @@ GOOS=darwin GOARCH=arm64 goforge build
 ## Platform Support
 
 | Platform | Architecture | Status |
-|----------|--------------|--------|
-| Linux | x86_64 | ✅ |
-| Linux | aarch64 | ✅ |
-| macOS | x86_64 | ✅ |
-| macOS | arm64 | ✅ |
-| Windows | x86_64 | ✅ |
-| Windows | arm64 | ✅ |
+| -------- | ------------ | ------ |
+| Linux    | x86_64       | ✅     |
+| Linux    | aarch64      | ✅     |
+| macOS    | x86_64       | ✅     |
+| macOS    | arm64        | ✅     |
+| Windows  | x86_64       | ✅     |
+| Windows  | arm64        | ✅     |
 
 ## Configuration
 

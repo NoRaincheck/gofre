@@ -31,3 +31,17 @@ path = "hatch_build.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["goforge_pkg"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[dependency-groups]
+dev = [
+    "deno>=0.0.1",
+    "pytest>=8.4.2",
+    "ruff>=0.15.21",
+    "ty>=0.0.59",
+]

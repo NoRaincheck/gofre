@@ -41,9 +41,12 @@ class CustomBuildHook(BuildHookInterface):
         env["CGO_ENABLED"] = "0"
 
         cmd = [
-            "go", "build",
-            "-ldflags", "-s -w",
-            "-o", output,
+            "go",
+            "build",
+            "-ldflags",
+            "-s -w",
+            "-o",
+            output,
             ".",
         ]
 

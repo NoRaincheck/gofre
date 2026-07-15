@@ -4,14 +4,15 @@ GoForge Benchmark Suite
 Compares pure Python vs Go extensions across multiple computational tasks.
 """
 
-import time
-import sys
 import os
 import random
+import sys
+import time
 
 # ============================================================
 # Pure Python implementations
 # ============================================================
+
 
 def fibonacci_py(n):
     """Pure Python recursive fibonacci."""
@@ -19,12 +20,14 @@ def fibonacci_py(n):
         return n
     return fibonacci_py(n - 1) + fibonacci_py(n - 2)
 
+
 def sum_slice_py(data):
     """Pure Python sum."""
     total = 0.0
     for v in data:
         total += v
     return total
+
 
 def matrix_multiply_py(a, b, n):
     """Pure Python matrix multiplication."""
@@ -36,6 +39,7 @@ def matrix_multiply_py(a, b, n):
                 s += a[i * n + k] * b[k * n + j]
             result[i * n + j] = s
     return result
+
 
 def count_primes_py(limit):
     """Pure Python prime counter."""
@@ -59,6 +63,7 @@ def count_primes_py(limit):
             count += 1
     return count
 
+
 def sort_ints_py(data):
     """Pure Python quicksort."""
     result = list(data)
@@ -70,6 +75,7 @@ def sort_ints_py(data):
 # Benchmark runner
 # ============================================================
 
+
 def bench(func, *args, iterations=1):
     """Benchmark a function and return time in ms."""
     start = time.perf_counter()
@@ -78,21 +84,25 @@ def bench(func, *args, iterations=1):
     elapsed = (time.perf_counter() - start) / iterations
     return elapsed * 1000, result
 
+
 def format_time(ms):
     """Format time appropriately."""
     if ms < 0.001:
-        return f"{ms*1000000:.1f} ns"
+        return f"{ms * 1000000:.1f} ns"
     elif ms < 1:
-        return f"{ms*1000:.1f} us"
+        return f"{ms * 1000:.1f} us"
     elif ms < 1000:
         return f"{ms:.3f} ms"
     else:
-        return f"{ms/1000:.3f} s"
+        return f"{ms / 1000:.3f} s"
+
 
 def print_result(name, py_time, go_time):
     """Print benchmark result."""
-    speedup = py_time / go_time if go_time > 0 else float('inf')
-    print(f"  {name:30s}  Python: {format_time(py_time):>12s}  Go: {format_time(go_time):>12s}  Speedup: {speedup:6.1f}x")
+    speedup = py_time / go_time if go_time > 0 else float("inf")
+    print(
+        f"  {name:30s}  Python: {format_time(py_time):>12s}  Go: {format_time(go_time):>12s}  Speedup: {speedup:6.1f}x"
+    )
 
 
 def run_benchmarks():
@@ -100,13 +110,14 @@ def run_benchmarks():
     # Try to import Go bindings
     go_available = False
     build_paths = [
-        os.path.join(os.path.dirname(__file__), '..', 'build'),
-        os.path.join(os.path.dirname(__file__), '..', '..', '..', 'output', 'benchmark', 'build'),
+        os.path.join(os.path.dirname(__file__), "..", "build"),
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "output", "benchmark", "build"),
     ]
     for bp in build_paths:
         try:
             sys.path.insert(0, bp)
             import goforge_benchmark as go
+
             go_available = True
             break
         except ImportError:
