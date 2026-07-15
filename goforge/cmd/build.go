@@ -71,7 +71,7 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	libPath := filepath.Join(buildDir, libName)
 	
 	goBuilder := build.NewGoBuilder(cfg.Tool.GoForge.Module, dir)
-	if err := goBuilder.BuildSharedLib(libPath); err != nil {
+	if err := goBuilder.BuildSharedLib(libPath, cfg.Tool.GoForge.BuildTags); err != nil {
 		return fmt.Errorf("failed to build Go shared library: %w", err)
 	}
 	

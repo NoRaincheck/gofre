@@ -18,10 +18,11 @@ type Config struct {
 	
 	Tool struct {
 		GoForge struct {
-			Module   string `toml:"module"`
-			Bindings string `toml:"bindings"`
-			PkgDir   string `toml:"pkg-dir"`
-			Binaries []string `toml:"binaries"`
+			Module    string   `toml:"module"`
+			Bindings  string   `toml:"bindings"`
+			PkgDir    string   `toml:"pkg-dir"`
+			Binaries  []string `toml:"binaries"`
+			BuildTags []string `toml:"build-tags"`
 		} `toml:"goforge"`
 	} `toml:"tool"`
 }

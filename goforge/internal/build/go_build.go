@@ -21,13 +21,18 @@ func NewGoBuilder(module, dir string) *GoBuilder {
 	}
 }
 
-func (b *GoBuilder) BuildSharedLib(output string) error {
+func (b *GoBuilder) BuildSharedLib(output string, tags []string) error {
 	args := []string{
 		"build",
 		"-buildmode=c-shared",
 		"-o", output,
-		"./cmd/",
 	}
+	
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, ","))
+	}
+	
+	args = append(args, "./cmd/")
 	
 	cmd := exec.Command("go", args...)
 	cmd.Dir = b.Dir
@@ -38,12 +43,17 @@ func (b *GoBuilder) BuildSharedLib(output string) error {
 	return cmd.Run()
 }
 
-func (b *GoBuilder) BuildBinary(output string) error {
+func (b *GoBuilder) BuildBinary(output string, tags []string) error {
 	args := []string{
 		"build",
 		"-o", output,
-		"./cmd/...",
 	}
+	
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, ","))
+	}
+	
+	args = append(args, "./cmd/...")
 	
 	cmd := exec.Command("go", args...)
 	cmd.Dir = b.Dir
@@ -54,7 +64,7 @@ func (b *GoBuilder) BuildBinary(output string) error {
 	return cmd.Run()
 }
 
-func (b *GoBuilder) BuildForPlatform(output string, goos, goarch string) error {
+func (b *GoBuilder) BuildForPlatform(output string, goos, goarch string, tags []string) error {
 	env := os.Environ()
 	env = append(env, "GOOS="+goos, "GOARCH="+goarch)
 	
@@ -62,8 +72,13 @@ func (b *GoBuilder) BuildForPlatform(output string, goos, goarch string) error {
 		"build",
 		"-buildmode=c-shared",
 		"-o", output,
-		"./cmd/",
 	}
+	
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, ","))
+	}
+	
+	args = append(args, "./cmd/")
 	
 	cmd := exec.Command("go", args...)
 	cmd.Dir = b.Dir
