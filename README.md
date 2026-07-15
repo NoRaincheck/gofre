@@ -116,6 +116,25 @@ Based on [programming-language-benchmarks](https://programming-language-benchmar
 | knucleotide     | >30s        | 0.68s    | **>44x** |
 | json-serde      | 1.9s        | 0.14s    | **14x**  |
 
+## Webserver Benchmarks
+
+GoForge also benchmarks HTTP server performance across six approaches — from pure Python to Go with embedded pocketpy.
+See the [full results and methodology](examples/webserver/README.md).
+
+### Quick Summary
+
+| Server             | Req/sec (avg) | Idle RSS | Peak RSS | Binary |
+| ------------------ | ------------: | -------: | -------: | ------ |
+| Pure Go (stdlib)   |       ~42,000 |  10.3 MB |  19.0 MB | 8.0 MB |
+| **Go + pocketpy**  |       ~40,000 |  13.3 MB |  21.8 MB | 9.7 MB |
+| Pure Python        |        ~4,600 |  15.2 MB |  15.4 MB | —      |
+| CPython + Go cffi  |        ~4,500 |  23.1 MB |  29.6 MB | 2.1 MB |
+| FastAPI + uvicorn  |        ~7,000 |  36.9 MB |  37.4 MB | —      |
+| Flask (dev server) |        ~2,100 |  26.5 MB |  27.8 MB | —      |
+
+**Go + pocketpy delivers ~5-6x the throughput of FastAPI/Flask** while keeping memory under 22 MB peak in a single 9.7
+MB binary. See [examples/webserver/README.md](examples/webserver/README.md) for full details.
+
 ## Project Structure
 
 ```

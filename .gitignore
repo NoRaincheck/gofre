@@ -21,6 +21,9 @@ goforge_pkg/bin/
 examples/*/build/
 examples/*/dist/
 
+# Compiled server binaries
+examples/webserver/server_pure_go
+
 # Shared libraries
 *.dylib
 *.so
