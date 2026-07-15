@@ -14,13 +14,13 @@ for Rust/Python.
 ## Installation
 
 ```bash
-go install github.com/grackin/gofre@latest
+go install github.com/NoRaincheck/gofre@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/grackin/gofre
+git clone https://github.com/NoRaincheck/gofre
 cd gofre
 go build -o gofre .
 ```

@@ -1,4 +1,4 @@
-module github.com/grackin/gofre
+module github.com/NoRaincheck/gofre
 
 go 1.26.3
 
