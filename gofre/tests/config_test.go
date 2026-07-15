@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/grackin/gofre/internal/config"
+	"github.com/NoRaincheck/gofre/internal/config"
 )
 
 func TestLoadValidConfig(t *testing.T) {

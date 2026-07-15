@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/grackin/gofre/internal/bindings"
+	"github.com/NoRaincheck/gofre/internal/bindings"
 )
 
 func TestParseFileSimple(t *testing.T) {

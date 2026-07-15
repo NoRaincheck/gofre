@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/grackin/gofre/internal/build"
+	"github.com/NoRaincheck/gofre/internal/build"
 )
 
 func TestGetLibExtension(t *testing.T) {

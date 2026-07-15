@@ -9,7 +9,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/grackin/gofre/internal/gomod/json"
+	"github.com/NoRaincheck/gofre/internal/gomod/json"
 )
 
 //export JSONDumps

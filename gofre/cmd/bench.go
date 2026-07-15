@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grackin/gofre/internal/config"
+	"github.com/NoRaincheck/gofre/internal/config"
 	"github.com/spf13/cobra"
 )
 

@@ -2,7 +2,7 @@
 
 package jsonbridge
 
-import "github.com/grackin/gofre/internal/pocketpy"
+import "github.com/NoRaincheck/gofre/internal/pocketpy"
 
 func Register(vm *pocketpy.Interpreter) error {
 	err := vm.RegisterFunc("gojson", "dumps", "dumps(obj)", func(args []pocketpy.Value) (pocketpy.Value, error) {

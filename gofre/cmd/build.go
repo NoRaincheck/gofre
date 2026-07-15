@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/grackin/gofre/internal/bindings"
-	"github.com/grackin/gofre/internal/build"
-	"github.com/grackin/gofre/internal/config"
+	"github.com/NoRaincheck/gofre/internal/bindings"
+	"github.com/NoRaincheck/gofre/internal/build"
+	"github.com/NoRaincheck/gofre/internal/config"
 	"github.com/spf13/cobra"
 )
 

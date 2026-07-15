@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/grackin/gofre/internal/build"
+	"github.com/NoRaincheck/gofre/internal/build"
 )
 
 func TestWheelBuilderBuild(t *testing.T) {

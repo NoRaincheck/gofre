@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/grackin/gofre/internal/bindings"
+	"github.com/NoRaincheck/gofre/internal/bindings"
 )
 
 func TestGenerateBasic(t *testing.T) {

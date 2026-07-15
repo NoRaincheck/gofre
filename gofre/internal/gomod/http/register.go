@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/grackin/gofre/internal/pocketpy"
+	"github.com/NoRaincheck/gofre/internal/pocketpy"
 )
 
 type pyRequest struct {

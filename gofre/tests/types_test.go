@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/grackin/gofre/internal/bindings"
+	"github.com/NoRaincheck/gofre/internal/bindings"
 )
 
 func TestMapTypePrimitives(t *testing.T) {
