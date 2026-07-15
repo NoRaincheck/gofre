@@ -12,10 +12,11 @@ import (
 
 	httpbridge "github.com/NoRaincheck/gofre/internal/gomod/http"
 	jsonbridge "github.com/NoRaincheck/gofre/internal/gomod/json"
+	sqlbridge "github.com/NoRaincheck/gofre/internal/gomod/sql"
 	"github.com/NoRaincheck/gofre/internal/pocketpy"
 )
 
-//go:embed app.py
+//go:embed app_benchmark.py
 var appSource string
 
 func main() {
@@ -32,7 +33,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := vm.Exec(appSource, "app.py"); err != nil {
+	if err := sqlbridge.Register(vm); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to register gosql: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := vm.Exec(appSource, "app_benchmark.py"); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to exec app: %v\n", err)
 		os.Exit(1)
 	}

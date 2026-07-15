@@ -33,49 +33,85 @@ Tested with `hey -n 5000 -c 10` on Apple M-series.
 
 ### Suite 2: TechEmpower-Inspired (Concurrency Sweep)
 
-Plaintext and JSON endpoints tested at concurrency levels 1, 5, 10, 25, 50, 100 to measure scaling behavior.
+Plaintext, JSON, and SQLite I/O endpoints tested at concurrency levels 1, 5, 10, 25, 50, 100. SQLite uses per-server
+WAL-mode databases with a 10,000-row `world` table.
 
 #### Plaintext — `GET /plaintext` (req/s)
 
-| Server      |    c=1 |    c=5 |   c=10 |   c=25 |   c=50 |      c=100 |
-| ----------- | -----: | -----: | -----: | -----: | -----: | ---------: |
-| pure_go     | 15,408 | 41,669 | 45,035 | 48,314 | 57,769 | **62,907** |
-| pocketpy    |  4,492 |  1,557 |  6,707 | 28,267 | 28,691 |     32,933 |
-| fastapi     |  3,880 |  5,860 |  6,141 |  6,292 |  6,412 |      6,447 |
-| pure_python |  1,781 |  4,271 |  4,493 |  2,288 |    635 |        498 |
-| flask       |  1,132 |    963 |  1,876 |    876 |  2,205 |      1,253 |
+| Server      | c=1 |   c=5 |  c=10 |  c=25 |  c=50 |     c=100 |
+| ----------- | --: | ----: | ----: | ----: | ----: | --------: |
+| pocketpy    | 709 | 6,056 | 6,754 | 7,889 | 7,585 | **8,060** |
+| fastapi     | 652 | 6,011 | 7,439 | 7,769 | 8,333 |     7,811 |
+| pure_go     | 692 | 3,112 | 7,324 | 5,371 | 5,716 |     4,613 |
+| flask       | 468 | 2,033 | 1,999 | 2,027 | 2,091 |     2,105 |
+| pure_python | 525 | 3,521 | 3,452 | 2,152 |   626 |       362 |
 
 #### JSON — `GET /json` (req/s)
 
-| Server      |    c=1 |    c=5 |   c=10 |   c=25 |   c=50 |      c=100 |
-| ----------- | -----: | -----: | -----: | -----: | -----: | ---------: |
-| pure_go     | 15,185 | 42,890 | 48,311 | 54,061 | 56,447 | **60,423** |
-| pocketpy    |  4,530 | 16,433 | 20,608 | 28,969 | 26,085 |     32,009 |
-| fastapi     |  3,443 |  5,121 |  5,224 |  5,300 |  5,302 |      5,308 |
-| pure_python |  1,774 |  4,409 |  4,211 |  2,272 |    829 |        499 |
-| flask       |  1,091 |    766 |  1,022 |    822 |  2,219 |      2,151 |
+| Server      | c=1 |   c=5 |  c=10 |  c=25 |  c=50 |     c=100 |
+| ----------- | --: | ----: | ----: | ----: | ----: | --------: |
+| fastapi     | 739 | 5,725 | 7,823 | 7,439 | 7,990 | **7,757** |
+| pocketpy    | 703 | 6,095 | 7,492 | 8,027 | 7,859 |     7,566 |
+| pure_go     | 713 | 5,652 | 7,199 | 7,766 | 7,705 |     6,900 |
+| flask       | 474 | 1,903 | 1,973 | 2,041 | 1,982 |     2,004 |
+| pure_python | 535 | 3,529 | 3,518 | 2,148 |   624 |       592 |
+
+#### DB Single Query — `GET /db` (req/s)
+
+| Server      | c=1 |   c=5 |  c=10 |  c=25 |  c=50 |     c=100 |
+| ----------- | --: | ----: | ----: | ----: | ----: | --------: |
+| fastapi     | 722 | 5,896 | 7,485 | 8,118 | 7,688 | **8,319** |
+| pocketpy    | 721 | 6,082 | 7,294 | 7,637 | 7,578 |     8,157 |
+| pure_go     | 701 | 5,726 | 7,405 | 7,909 | 7,766 |     4,916 |
+| flask       | 472 | 1,198 | 1,057 | 1,254 | 1,264 |     1,371 |
+| pure_python | 332 |   383 |   465 |   422 |   431 |       378 |
+
+#### DB Multiple Queries — `GET /queries?N=20` (req/s)
+
+| Server      | c=1 |   c=5 |  c=10 |  c=25 |  c=50 |     c=100 |
+| ----------- | --: | ----: | ----: | ----: | ----: | --------: |
+| pocketpy    | 704 | 6,009 | 6,961 | 7,615 | 8,018 | **8,089** |
+| fastapi     | 681 | 6,025 | 7,560 | 7,832 | 7,810 |     8,021 |
+| pure_go     | 690 | 5,769 | 6,997 | 8,152 | 8,038 |     7,823 |
+| flask       | 467 |   444 |   534 |   639 |   640 |       632 |
+| pure_python | 309 |   372 |   452 |   390 |   411 |       360 |
+
+#### DB Updates — `POST /updates` (req/s)
+
+| Server      | c=1 |   c=5 |  c=10 |  c=25 |  c=50 |     c=100 |
+| ----------- | --: | ----: | ----: | ----: | ----: | --------: |
+| pure_go     | 707 | 5,743 | 7,141 | 7,529 | 7,937 | **8,190** |
+| pocketpy    | 696 | 6,001 | 7,293 | 8,019 | 8,341 |     7,912 |
+| fastapi     | 664 | 5,816 | 7,770 | 8,075 | 8,105 |     7,887 |
+| flask       | 463 |   575 |   635 |   637 |   665 |       826 |
+| pure_python | 342 | 1,987 | 2,443 | 1,872 | 1,143 |       492 |
 
 #### Memory Usage (RSS KB)
 
 | Server      |    Idle | c=1 peak | c=100 peak | Growth at c=100 |
 | ----------- | ------: | -------: | ---------: | --------------: |
-| pure_go     |   1,744 |    1,744 |      1,744 |              +0 |
-| pocketpy    |   1,712 |    1,712 |      1,712 |              +0 |
-| pure_python | ~15,900 |   15,856 |     16,032 |             +16 |
-| flask       | ~27,800 |   27,632 |     29,312 |            +192 |
-| fastapi     | ~38,400 |   38,240 |     39,936 |            +656 |
+| pure_go     | ~19,700 |   19,744 |     29,216 |          +9,472 |
+| pure_python | ~16,600 |   16,592 |     29,344 |         +12,752 |
+| pocketpy    | ~23,000 |   23,024 |     35,056 |         +12,032 |
+| flask       | ~29,100 |   27,472 |     29,664 |            +192 |
+| fastapi     | ~66,700 |   66,656 |     68,176 |          +1,520 |
 
 ## Key Observations
 
-- **pure_go** scales 4.1x from c=1 to c=100 with zero memory growth — goroutines handle concurrency without
-  per-connection overhead.
-- **pocketpy** scales 7.3x — starts slow but catches up at high concurrency; the Go HTTP layer handles connection
-  queuing well even when the Python interpreter is the bottleneck.
-- **fastapi** plateaus around c=10 (~6,400 req/s) — single-worker uvicorn can't utilize more connections.
-- **pure_python** collapses under high concurrency — the GIL causes contention above c=10 (4,493 → 498 req/s).
-- **flask** is erratic with no consistent scaling pattern.
-- **Go servers use 22x less memory** than Python (1.7 MB vs 16–39 MB idle).
-- **pocketpy dispatch overhead** over pure Go is minimal (~0–10%).
+- **pocketpy** leads on plaintext, queries, and matches fastapi on db/updates. Uses ~23 MB idle (Go runtime + embedded
+  Python VM), growing to ~35 MB after sustained DB load. The Go HTTP layer handles connection queuing while the embedded
+  Python interpreter serves requests efficiently.
+- **fastapi** dominates db reads (8,319 req/s at c=100) and is competitive across all endpoints, but uses the most
+  memory (~67 MB idle) due to uvicorn + SQLAlchemy + sqlmodel stack overhead.
+- **pure_go** excels at writes (8,190 req/s at c=100) and is strong on db reads at mid-concurrency. Lowest idle memory
+  (~20 MB) of the high-throughput servers, growing to ~29 MB after sustained DB load (SQLite page cache).
+- **pure_python** collapses under concurrency — the GIL limits db throughput to ~400 req/s regardless of load level, and
+  plaintext drops from 3,521 (c=5) to 362 (c=100). Memory grows significantly (+13 MB) from per-thread allocations.
+- **flask** plateaus early (~2,000 req/s plaintext) and degrades on queries (632 req/s at c=100) due to synchronous WSGI
+  blocking.
+- **fastapi uses ~3x more memory** than pocketpy (67 MB vs 23 MB idle) for comparable throughput.
+- **SQLite writes scale well** for Go-native and pocketpy (7,900–8,200 req/s) but pure_python and flask bottleneck on
+  Python's sqlite3 module under concurrency.
 
 ## Files
 
@@ -99,6 +135,7 @@ Plaintext and JSON endpoints tested at concurrency levels 1, 5, 10, 25, 50, 100 
 | `benchmarks/servers/server_pure.py`    | Python stdlib with TFB endpoints   |
 | `benchmarks/servers/server_fastapi.py` | FastAPI with TFB endpoints         |
 | `benchmarks/servers/server_flask.py`   | Flask with TFB endpoints           |
+| `gofre/examples/webserver_binary/`     | Pocketpy Go+Python binary          |
 
 ## Running
 
@@ -106,7 +143,7 @@ Plaintext and JSON endpoints tested at concurrency levels 1, 5, 10, 25, 50, 100 
 
 ```bash
 go install github.com/rakyll/hey@latest
-pip3 install fastapi uvicorn flask
+pip3 install fastapi uvicorn flask sqlmodel
 ```
 
 ### Basic Routes

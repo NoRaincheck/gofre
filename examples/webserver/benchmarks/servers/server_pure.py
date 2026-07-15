@@ -3,14 +3,38 @@
 Routes:
   GET  /plaintext   — Plain text response
   GET  /json        — JSON serialization
+  GET  /db          — Single random row query
+  GET  /queries     — Multiple random row queries
+  POST /updates     — Update random rows
 
 Usage: python3 server_pure.py [port]
 """
 
 import http.server
 import json
+import random
+import sqlite3
 import sys
 import threading
+import urllib.parse
+
+DB_PATH = "benchmark_pure.db"
+
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("PRAGMA journal_mode=WAL")
+    c.execute("CREATE TABLE IF NOT EXISTS world (id INTEGER PRIMARY KEY, randomNumber INTEGER NOT NULL)")
+    c.execute("SELECT COUNT(*) FROM world")
+    if c.fetchone()[0] == 0:
+        data = [(i, random.randint(1, 10000)) for i in range(1, 10001)]
+        c.executemany("INSERT INTO world (id, randomNumber) VALUES (?, ?)", data)
+        conn.commit()
+    conn.close()
+
+
+init_db()
 
 
 class BenchmarkHandler(http.server.BaseHTTPRequestHandler):
@@ -21,6 +45,16 @@ class BenchmarkHandler(http.server.BaseHTTPRequestHandler):
             self._handle_plaintext()
         elif self.path == "/json":
             self._handle_json()
+        elif self.path.startswith("/db"):
+            self._handle_db()
+        elif self.path.startswith("/queries"):
+            self._handle_queries()
+        else:
+            self._send_response(404, json.dumps({"error": "not found"}))
+
+    def do_POST(self):
+        if self.path == "/updates":
+            self._handle_updates()
         else:
             self._send_response(404, json.dumps({"error": "not found"}))
 
@@ -55,6 +89,46 @@ class BenchmarkHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body.encode())
+
+    # ── DB Single Query ────────────────────────────────────────────
+    def _handle_db(self):
+        conn = sqlite3.connect(DB_PATH)
+        row = conn.execute("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT 1").fetchone()
+        conn.close()
+        response = {"id": row[0], "randomNumber": row[1]}
+        self._send_response(200, json.dumps(response))
+
+    # ── DB Multiple Queries ────────────────────────────────────────
+    def _handle_queries(self):
+        n = 1
+        if "?" in self.path:
+            qs = urllib.parse.urlparse(self.path).query
+            for part in qs.split("&"):
+                if part.startswith("N="):
+                    try:
+                        n = max(1, min(500, int(part[2:])))
+                    except ValueError:
+                        pass
+        conn = sqlite3.connect(DB_PATH)
+        rows = conn.execute("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT ?", (n,)).fetchall()
+        conn.close()
+        response = [{"id": r[0], "randomNumber": r[1]} for r in rows]
+        self._send_response(200, json.dumps(response))
+
+    # ── DB Updates ─────────────────────────────────────────────────
+    def _handle_updates(self):
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length).decode()
+        updates = json.loads(body)
+        conn = sqlite3.connect(DB_PATH)
+        for u in updates:
+            conn.execute(
+                "UPDATE world SET randomNumber = ? WHERE id = ?",
+                (u["randomNumber"], u["id"]),
+            )
+        conn.commit()
+        conn.close()
+        self._send_response(200, json.dumps(updates))
 
     def _send_response(self, status, body):
         body_bytes = body.encode()

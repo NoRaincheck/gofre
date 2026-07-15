@@ -81,6 +81,13 @@ func Register(vm *pocketpy.Interpreter) error {
 				buf, _ := io.ReadAll(r.Body)
 				body = string(buf)
 			}
+			// Pass URL query string to Python handler
+			if r.URL.RawQuery != "" {
+				if body != "" {
+					body += "\n"
+				}
+				body += r.URL.RawQuery
+			}
 
 			funcName := fmt.Sprintf("_handler_%d", handlerID)
 			respBody, err := dispatchToPython(funcName, body)

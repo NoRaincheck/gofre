@@ -35,3 +35,8 @@ examples/webserver/server_pure_go
 *.dylib
 *.so
 *.dll
+
+# Benchmarking artefacts
+benchmark*.db
+benchmark*.db-*
+webserver_binary

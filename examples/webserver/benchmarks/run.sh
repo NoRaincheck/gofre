@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Benchmark runner — plaintext & json endpoints with concurrency sweep.
+# Benchmark runner — plaintext, json, and SQLite I/O endpoints with concurrency sweep.
 # Compatible with macOS bash 3.2.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -32,6 +32,10 @@ start_server() {
         sleep 0.3
     fi
 
+    # Clean DB files for this server
+    rm -f "$SERVERS_DIR"/benchmark*.db
+    rm -f "$GO_FRE_ROOT/examples/webserver_binary/benchmark*.db"
+
     if [ "$name" = "pocketpy" ]; then
         rm -f "$GO_FRE_ROOT/examples/webserver_binary/benchmark.db"
         (cd "$GO_FRE_ROOT/examples/webserver_binary" && "$POCKETPY_BINARY" "$port") \
@@ -40,18 +44,24 @@ start_server() {
         eval "$cmd" > "$RESULTS_DIR/${name}.log" 2>&1 &
     fi
     local server_pid=$!
-    # Wait briefly for the process to fork, then use lsof to get the actual PID
-    sleep 0.3
-    local actual_pid
-    actual_pid=$(lsof -ti :"$port" 2>/dev/null | head -1)
-    if [ -n "$actual_pid" ]; then
-        server_pid=$actual_pid
-    fi
+    # Wait for the process to bind, then use lsof to get the actual listening PID
+    local lsof_retries=10
+    while [ $lsof_retries -gt 0 ]; do
+        sleep 0.3
+        local actual_pid
+        actual_pid=$(lsof -ti :"$port" 2>/dev/null | head -1)
+        if [ -n "$actual_pid" ]; then
+            server_pid=$actual_pid
+            break
+        fi
+        lsof_retries=$((lsof_retries - 1))
+    done
     echo "$server_pid" > "$RESULTS_DIR/${name}.pid"
 
     local retries=30
     while [ $retries -gt 0 ]; do
-        if curl -s "http://localhost:$port/plaintext" > /dev/null 2>&1; then
+        if curl -s "http://localhost:$port/plaintext" > /dev/null 2>&1 || \
+           curl -s "http://localhost:$port/db" > /dev/null 2>&1; then
             echo -e "${GREEN}[OK]${NC} Server '$name' ready on port $port (PID: $server_pid)" >&2
             echo "$server_pid"
             return 0
@@ -130,15 +140,19 @@ main() {
     printf "pure_python\t8082\tpython3 %s/server_pure.py\n" "$SERVERS_DIR" > "$SERVERS_FILE"
     printf "fastapi\t8083\tpython3 %s/server_fastapi.py\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
     printf "flask\t8084\tpython3 %s/server_flask.py\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
-    printf "pure_go\t8085\tgo run %s/server_pure_go.go\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
+    printf "pure_go\t8085\t%s/server_pure_go\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
     printf "pocketpy\t8086\t%s\n" "$POCKETPY_BINARY" >> "$SERVERS_FILE"
 
+    # Tests: name<TAB>method<TAB>path<TAB>body
     printf "plaintext\tGET\t/plaintext\t0\n" > "$TESTS_FILE"
     printf "json\tGET\t/json\t0\n" >> "$TESTS_FILE"
+    printf "db\tGET\t/db\t0\n" >> "$TESTS_FILE"
+    printf "queries\tGET\t/queries?N=20\t0\n" >> "$TESTS_FILE"
+    printf "updates\tPOST\t/updates\t[{\"id\":1,\"randomNumber\":42},{\"id\":2,\"randomNumber\":43}]\n" >> "$TESTS_FILE"
 
     log "=========================================="
     log "  Webserver Benchmark Suite"
-    log "  Plaintext + JSON — Concurrency Sweep"
+    log "  Plaintext + JSON + SQLite I/O — Concurrency Sweep"
     log "  $(date)"
     log "=========================================="
     log "Requests per test: $NUM_REQUESTS"
@@ -213,7 +227,11 @@ main() {
                 hey_args=("-n" "$NUM_REQUESTS" "-c" "$CONCURRENCY")
                 url="http://localhost:$port$tpath"
                 if [ "$text" != "0" ]; then
-                    url="$url?$text"
+                    if [ "$tmethod" = "POST" ]; then
+                        hey_args+=("-m" "POST" "-d" "$text")
+                    else
+                        url="$url?$text"
+                    fi
                 fi
 
                 pid=$(cat "$RESULTS_DIR/${name}.pid" 2>/dev/null || echo "0")
