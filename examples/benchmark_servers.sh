@@ -18,7 +18,11 @@ echo ""
 
 # Binary sizes
 echo "--- Binary Sizes ---"
-ls -lh "$GO_BINARY" 2>/dev/null | awk '{print "  Go binary (pocketpy):", $5}'
+if [ -f "$GO_BINARY" ]; then
+    ls -lh "$GO_BINARY" 2>/dev/null | awk '{print "  Go binary (pocketpy):", $5}'
+else
+    echo "  Go binary (pocketpy): not built (build with no_pocketpy tag excluded)"
+fi
 python3 -c "
 import sys, os
 libs = ['examples/webserver/build/goforge_webserver/_binding.dylib',
@@ -80,8 +84,15 @@ bench() {
     echo ""
 }
 
-# Test 1: Go binary (pocketpy)
-bench "Go Binary (pocketpy embedded)" 8080 "$GO_BINARY"
+# Test 1: Go binary (pocketpy) - skip if not built
+if [ -f "$GO_BINARY" ]; then
+    bench "Go Binary (pocketpy embedded)" 8080 "$GO_BINARY"
+else
+    echo "--- Go Binary (pocketpy embedded) ---"
+    echo "  SKIPPED: binary not found at $GO_BINARY"
+    echo "  Build without no_pocketpy tag to include this benchmark"
+    echo ""
+fi
 
 # Test 2: CPython + Go cffi
 bench "CPython + Go cffi" 8081 "python3 $CPYTHON_SCRIPT 8081"

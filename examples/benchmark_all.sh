@@ -36,9 +36,16 @@ bench() {
     echo ""
 }
 
-# 1. Go binary (pocketpy embedded)
-bench "Go Binary (pocketpy embedded)" 8080 \
-  "./goforge/examples/webserver_binary/webserver_binary"
+# 1. Go binary (pocketpy embedded) - skip if not built
+if [ -f "./goforge/examples/webserver_binary/webserver_binary" ]; then
+    bench "Go Binary (pocketpy embedded)" 8080 \
+      "./goforge/examples/webserver_binary/webserver_binary"
+else
+    echo "--- Go Binary (pocketpy embedded) ---"
+    echo "  SKIPPED: binary not found"
+    echo "  Build without no_pocketpy tag to include this benchmark"
+    echo ""
+fi
 
 # 2. FastAPI + uvicorn (ASGI)
 bench "FastAPI + uvicorn" 8083 \
