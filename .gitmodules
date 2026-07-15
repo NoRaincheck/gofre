@@ -1,0 +1,3 @@
+[submodule "third_party/pocketpy"]
+	path = third_party/pocketpy
+	url = https://github.com/pocketpy/pocketpy
