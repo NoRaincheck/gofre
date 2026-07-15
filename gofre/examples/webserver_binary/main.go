@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/grackin/gofre/internal/gomod/http"
-	"github.com/grackin/gofre/internal/gomod/json"
-	"github.com/grackin/gofre/internal/pocketpy"
+	httpbridge "github.com/NoRaincheck/gofre/internal/gomod/http"
+	jsonbridge "github.com/NoRaincheck/gofre/internal/gomod/json"
+	"github.com/NoRaincheck/gofre/internal/pocketpy"
 )
 
 //go:embed app.py

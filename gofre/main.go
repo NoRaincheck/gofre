@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/grackin/gofre/cmd"
+	"github.com/NoRaincheck/gofre/cmd"
 )
 
 func main() {
