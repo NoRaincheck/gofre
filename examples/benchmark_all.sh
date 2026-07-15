@@ -109,9 +109,9 @@ bench() {
 }
 
 # 1. Go binary (pocketpy embedded) - skip if not built
-if [ -f "./goforge/examples/webserver_binary/webserver_binary" ]; then
+if [ -f "./gofre/examples/webserver_binary/webserver_binary" ]; then
     bench "Go Binary (pocketpy embedded)" 8080 \
-      "./goforge/examples/webserver_binary/webserver_binary"
+      "./gofre/examples/webserver_binary/webserver_binary"
 else
     echo "--- Go Binary (pocketpy embedded) ---"
     echo "  SKIPPED: binary not found"

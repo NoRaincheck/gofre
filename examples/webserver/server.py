@@ -2,7 +2,7 @@
 
 Run with: python3 server.py [port]
 Requires the Go shared library to be built first:
-  goforge build
+  gofre build
 """
 
 import http.server
@@ -13,11 +13,11 @@ import cffi
 
 ffi = cffi.FFI()
 
-lib_path = os.path.join(os.path.dirname(__file__), "build", "goforge_webserver", "_binding.dylib")
+lib_path = os.path.join(os.path.dirname(__file__), "build", "gofre_webserver", "_binding.dylib")
 if not os.path.exists(lib_path):
-    lib_path = os.path.join(os.path.dirname(__file__), "build", "goforge_webserver", "_binding.so")
+    lib_path = os.path.join(os.path.dirname(__file__), "build", "gofre_webserver", "_binding.so")
 if not os.path.exists(lib_path):
-    print("Go shared library not found. Run 'goforge build' first.")
+    print("Go shared library not found. Run 'gofre build' first.")
     print(f"Expected at: {lib_path}")
     sys.exit(1)
 

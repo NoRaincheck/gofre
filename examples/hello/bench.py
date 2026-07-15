@@ -34,11 +34,11 @@ def benchmark_fibonacci(iterations=100):
 
     # Go benchmark
     try:
-        import goforge_example
+        import gofre_example
 
         start = time.perf_counter()
         for _ in range(iterations):
-            goforge_example.Fibonacci(n)
+            gofre_example.Fibonacci(n)
         go_time = (time.perf_counter() - start) / iterations * 1000
 
         speedup = python_time / go_time
@@ -68,12 +68,12 @@ def benchmark_sum_slice(iterations=100):
     try:
         import array
 
-        import goforge_example
+        import gofre_example
 
         arr = array.array("d", data)
         start = time.perf_counter()
         for _ in range(iterations):
-            goforge_example.SumSlice(arr)
+            gofre_example.SumSlice(arr)
         go_time = (time.perf_counter() - start) / iterations * 1000
 
         speedup = python_time / go_time
@@ -87,7 +87,7 @@ def benchmark_sum_slice(iterations=100):
 
 def main():
     print("=" * 40)
-    print("GoForge Benchmark Suite")
+    print("GoFre Benchmark Suite")
     print("=" * 40)
 
     iterations = 100

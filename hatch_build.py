@@ -25,11 +25,11 @@ def _get_goarch():
 class CustomBuildHook(BuildHookInterface):
     def initialize(self, version, build_data):
         root = os.path.dirname(os.path.abspath(__file__))
-        go_dir = os.path.join(root, "goforge")
-        bin_dir = os.path.join(root, "goforge_pkg", "bin")
+        go_dir = os.path.join(root, "gofre")
+        bin_dir = os.path.join(root, "gofre_pkg", "bin")
         os.makedirs(bin_dir, exist_ok=True)
 
-        binary_name = "goforge"
+        binary_name = "gofre"
         goos = _get_goos()
         if goos == "windows":
             binary_name += ".exe"
@@ -50,12 +50,12 @@ class CustomBuildHook(BuildHookInterface):
             ".",
         ]
 
-        print(f"GoForge: Compiling Go binary for {goos}/{env['GOARCH']}...")
+        print(f"GoFre: Compiling Go binary for {goos}/{env['GOARCH']}...")
         result = subprocess.run(cmd, cwd=go_dir, env=env, capture_output=True, text=True)
 
         if result.returncode != 0:
-            print(f"GoForge: Go compilation failed:\n{result.stderr}", file=sys.stderr)
+            print(f"GoFre: Go compilation failed:\n{result.stderr}", file=sys.stderr)
             raise RuntimeError(f"Go compilation failed for {goos}/{env['GOARCH']}")
 
         size_mb = os.path.getsize(output) / (1024 * 1024)
-        print(f"GoForge: Built goforge binary ({size_mb:.1f} MB)")
+        print(f"GoFre: Built gofre binary ({size_mb:.1f} MB)")

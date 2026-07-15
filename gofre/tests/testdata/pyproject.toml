@@ -1,0 +1,16 @@
+[build-system]
+requires = ["gofre>=0.1.0"]
+build-backend = "gofre.build"
+
+[project]
+name = "test-project"
+version = "1.2.3"
+description = "A test project"
+requires-python = ">=3.8"
+dependencies = ["cffi>=1.0.0"]
+
+[tool.gofre]
+module = "github.com/user/test-project"
+bindings = "cffi"
+pkg-dir = "pkg/core"
+build-tags = ["no_pocketpy"]

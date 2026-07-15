@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-GoForge Benchmark Suite
+GoFre Benchmark Suite
 Compares pure Python vs Go extensions across multiple computational tasks.
 """
 
@@ -116,7 +116,7 @@ def run_benchmarks():
     for bp in build_paths:
         try:
             sys.path.insert(0, bp)
-            import goforge_benchmark as go
+            import gofre_benchmark as go
 
             go_available = True
             break
@@ -124,7 +124,7 @@ def run_benchmarks():
             continue
 
     print("=" * 72)
-    print("GoForge Benchmark Suite")
+    print("GoFre Benchmark Suite")
     print("=" * 72)
     print(f"Python: {sys.version}")
     print(f"Go bindings: {'available' if go_available else 'NOT available (pure Python only)'}")
@@ -221,9 +221,9 @@ def run_benchmarks():
     print("=" * 72)
     if go_available:
         print("Go extensions provide significant speedup over pure Python.")
-        print("Use 'goforge build' to create distributable Python wheels.")
+        print("Use 'gofre build' to create distributable Python wheels.")
     else:
-        print("Go bindings not available. Build with 'goforge build' first.")
+        print("Go bindings not available. Build with 'gofre build' first.")
     print()
     print("Based on benchmarks from: https://programming-language-benchmarks.vercel.app/go-vs-python")
     print("Expected speedups: 10x-50x depending on workload")

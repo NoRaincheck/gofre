@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "goforge"
+name = "gofre"
 version = "0.1.0"
 description = "Build system for creating Python packages that bundle Go binaries"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-    { name = "GoForge Contributors" }
+    { name = "GoFre Contributors" }
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -21,16 +21,16 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/grackin/goforge"
+Homepage = "https://github.com/grackin/gofre"
 
 [project.scripts]
-goforge = "goforge_pkg:main"
+gofre = "gofre_pkg:main"
 
 [tool.hatch.build.hooks.custom]
 path = "hatch_build.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["goforge_pkg"]
+packages = ["gofre_pkg"]
 
 [tool.ruff]
 line-length = 120

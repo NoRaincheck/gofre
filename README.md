@@ -1,4 +1,4 @@
-# GoForge
+# GoFre 🧇
 
 A build system for creating Python packages with Go extensions, inspired by [maturin](https://github.com/PyO3/maturin)
 for Rust/Python.
@@ -14,15 +14,15 @@ for Rust/Python.
 ## Installation
 
 ```bash
-go install github.com/grackin/goforge@latest
+go install github.com/grackin/gofre@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/grackin/goforge
-cd goforge
-go build -o goforge .
+git clone https://github.com/grackin/gofre
+cd gofre
+go build -o gofre .
 ```
 
 ## Quick Start
@@ -30,7 +30,7 @@ go build -o goforge .
 ### Create a new project
 
 ```bash
-goforge new my-package
+gofre new my-package
 cd my-package
 ```
 
@@ -54,7 +54,7 @@ func Multiply(a, b int64) int64 {
 ### Build and install
 
 ```bash
-goforge develop
+gofre develop
 ```
 
 ### Use in Python
@@ -68,42 +68,42 @@ print(result)  # 5
 
 ## Commands
 
-| Command                  | Description                        |
-| ------------------------ | ---------------------------------- |
-| `goforge new <name>`     | Create a new project               |
-| `goforge build`          | Build the package                  |
-| `goforge build -o <dir>` | Build with custom output directory |
-| `goforge develop`        | Build and install in current venv  |
-| `goforge publish`        | Publish to PyPI                    |
-| `goforge bench`          | Run benchmarks                     |
+| Command                | Description                        |
+| ---------------------- | ---------------------------------- |
+| `gofre new <name>`     | Create a new project               |
+| `gofre build`          | Build the package                  |
+| `gofre build -o <dir>` | Build with custom output directory |
+| `gofre develop`        | Build and install in current venv  |
+| `gofre publish`        | Publish to PyPI                    |
+| `gofre bench`          | Run benchmarks                     |
 
 ## Benchmarks
 
-GoForge provides significant performance improvements over pure Python by leveraging Go's performance.
+GoFre provides significant performance improvements over pure Python by leveraging Go's performance.
 
 **Note**: The overhead of FFI calls means that very simple operations (like `sum()`) may not benefit from Go extensions.
-GoForge shines for complex computational workloads.
+GoFre shines for complex computational workloads.
 
 ### fibonacci(30) - Recursive Implementation
 
 | Implementation | Time     | Speedup |
 | -------------- | -------- | ------- |
 | Pure Python    | 175.1 ms | 1.0x    |
-| GoForge        | 3.0 ms   | **58x** |
+| GoFre          | 3.0 ms   | **58x** |
 
 ### count_primes(100,000)
 
 | Implementation | Time    | Speedup |
 | -------------- | ------- | ------- |
 | Pure Python    | 97.9 ms | 1.0x    |
-| GoForge        | 1.5 ms  | **63x** |
+| GoFre          | 1.5 ms  | **63x** |
 
 ### matrix_multiply(50x50)
 
 | Implementation | Time    | Speedup |
 | -------------- | ------- | ------- |
 | Pure Python    | 14.8 ms | 1.0x    |
-| GoForge        | 0.6 ms  | **24x** |
+| GoFre          | 0.6 ms  | **24x** |
 
 ### Real-World Benchmarks
 
@@ -118,8 +118,8 @@ Based on [programming-language-benchmarks](https://programming-language-benchmar
 
 ## Webserver Benchmarks
 
-GoForge also benchmarks HTTP server performance across six approaches — from pure Python to Go with embedded pocketpy.
-See the [full results and methodology](examples/webserver/README.md).
+GoFre also benchmarks HTTP server performance across six approaches — from pure Python to Go with embedded pocketpy. See
+the [full results and methodology](examples/webserver/README.md).
 
 ### Quick Summary
 
@@ -138,7 +138,7 @@ MB binary. See [examples/webserver/README.md](examples/webserver/README.md) for 
 ## Project Structure
 
 ```
-goforge/
+gofre/
 ├── main.go
 ├── go.mod
 ├── cmd/                    # CLI commands
@@ -168,7 +168,7 @@ Build artifacts go to `build/` and `dist/` by default. Use `--output-dir` to put
 
 ## How It Works
 
-1. **Parse**: GoForge parses your Go source files to find exported functions
+1. **Parse**: GoFre parses your Go source files to find exported functions
 2. **Build**: Compiles Go code to a shared library (`.so`, `.dylib`, `.dll`)
 3. **Generate**: Creates cffi bindings for Python
 4. **Package**: Builds a wheel with the shared library and Python wrappers
@@ -177,13 +177,13 @@ Build artifacts go to `build/` and `dist/` by default. Use `--output-dir` to put
 
 ```bash
 # Build for Linux from macOS
-GOOS=linux GOARCH=amd64 goforge build
+GOOS=linux GOARCH=amd64 gofre build
 
 # Build for Windows from macOS
-GOOS=windows GOARCH=amd64 goforge build
+GOOS=windows GOARCH=amd64 gofre build
 
 # Build for macOS arm64 from Intel
-GOOS=darwin GOARCH=arm64 goforge build
+GOOS=darwin GOARCH=arm64 gofre build
 ```
 
 ## Platform Support
@@ -203,8 +203,8 @@ GOOS=darwin GOARCH=arm64 goforge build
 
 ```toml
 [build-system]
-requires = ["goforge>=0.1.0"]
-build-backend = "goforge.build"
+requires = ["gofre>=0.1.0"]
+build-backend = "gofre.build"
 
 [project]
 name = "my-package"
@@ -212,7 +212,7 @@ version = "0.1.0"
 requires-python = ">=3.8"
 dependencies = ["cffi>=1.0.0"]
 
-[tool.goforge]
+[tool.gofre]
 module = "github.com/user/my-package"
 bindings = "cffi"
 pkg-dir = "pkg"
@@ -225,7 +225,7 @@ Use `build-tags` to pass custom Go build tags to `go build`. This is useful for 
 compilation.
 
 ```toml
-[tool.goforge]
+[tool.gofre]
 module = "github.com/user/my-package"
 build-tags = ["no_pocketpy"]
 ```
@@ -236,8 +236,8 @@ This produces:
 go build -buildmode=c-shared -tags no_pocketpy -o output ./cmd/
 ```
 
-GoForge ships with the `no_pocketpy` build tag, which excludes the embedded pocketpy interpreter and related bridge
-code. Files excluded by build tags:
+GoFre ships with the `no_pocketpy` build tag, which excludes the embedded pocketpy interpreter and related bridge code.
+Files excluded by build tags:
 
 - `internal/pocketpy/*` — pocketpy Go wrapper and C source
 - `internal/gomod/http/register.go` — pocketpy HTTP bridge

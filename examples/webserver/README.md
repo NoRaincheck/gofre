@@ -2,7 +2,7 @@
 
 This directory benchmarks six approaches to running web application code:
 
-1. **Go binary + pocketpy** — Go HTTP server with embedded pocketpy interpreter (`goforge/examples/webserver_binary/`)
+1. **Go binary + pocketpy** — Go HTTP server with embedded pocketpy interpreter (`gofre/examples/webserver_binary/`)
 2. **Pure Go (stdlib)** — Standard library `net/http` server, no dependencies
 3. **CPython + Go cffi** — CPython `http.server` calling Go JSON functions via cffi
 4. **Pure Python** — Baseline CPython `http.server` with no Go
@@ -26,7 +26,7 @@ All servers serve identical routes:
 | `server_flask.py`   | Flask (dev server)           |
 | `benchmark_all.sh`  | Benchmark runner using `hey` |
 
-The Go binary lives at `goforge/examples/webserver_binary/` and uses a Python `@app.route()` decorator API identical to
+The Go binary lives at `gofre/examples/webserver_binary/` and uses a Python `@app.route()` decorator API identical to
 Flask/FastAPI patterns.
 
 ## Binary Sizes
@@ -78,10 +78,10 @@ Measured with RSS sampling during `hey -n 5000 -c 10` load.
 
 ```bash
 # Go binary (pocketpy embedded)
-cd goforge/examples/webserver_binary && go build -o webserver_binary . && ./webserver_binary
+cd gofre/examples/webserver_binary && go build -o webserver_binary . && ./webserver_binary
 
 # CPython + Go cffi
-cd examples/webserver && goforge build && python3 server.py 8081
+cd examples/webserver && gofre build && python3 server.py 8081
 
 # Pure Python
 cd examples/webserver && python3 server_pure.py 8082

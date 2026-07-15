@@ -1,15 +1,15 @@
 [build-system]
-requires = ["goforge>=0.1.0"]
-build-backend = "goforge.build"
+requires = ["gofre>=0.1.0"]
+build-backend = "gofre.build"
 
 [project]
-name = "goforge-webserver"
+name = "gofre-webserver"
 version = "0.1.0"
-description = "Webserver example using GoForge"
+description = "Webserver example using GoFre"
 requires-python = ">=3.8"
 dependencies = ["cffi>=1.0.0"]
 
-[tool.goforge]
+[tool.gofre]
 module = "github.com/grackin/examples/webserver"
 bindings = "cffi"
 pkg-dir = "pkg/core"

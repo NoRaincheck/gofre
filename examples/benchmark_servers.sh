@@ -3,7 +3,7 @@
 
 set -e
 
-GO_BINARY="goforge/examples/webserver_binary/webserver_binary"
+GO_BINARY="gofre/examples/webserver_binary/webserver_binary"
 CPYTHON_SCRIPT="examples/webserver/server.py"
 PURE_SCRIPT="examples/webserver/server_pure.py"
 REQUESTS=${1:-1000}
@@ -25,8 +25,8 @@ else
 fi
 python3 -c "
 import sys, os
-libs = ['examples/webserver/build/goforge_webserver/_binding.dylib',
-        'examples/webserver/build/goforge_webserver/_binding.so']
+libs = ['examples/webserver/build/gofre_webserver/_binding.dylib',
+        'examples/webserver/build/gofre_webserver/_binding.so']
 for lib in libs:
     if os.path.exists(lib):
         size = os.path.getsize(lib)

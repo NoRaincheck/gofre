@@ -78,8 +78,8 @@
 
 **Decision**:
 
-- `goforge develop` builds and symlinks to venv
-- Changes to Go code require re-running `goforge develop`
+- `gofre develop` builds and symlinks to venv
+- Changes to Go code require re-running `gofre develop`
 - No automatic rebuild on file changes
 
 **Impact**: Manual rebuild required, but predictable.
@@ -91,7 +91,7 @@
 **Decision**:
 
 - Use `GOOS` and `GOARCH` environment variables
-- GoForge detects current platform for wheel tags
+- GoFre detects current platform for wheel tags
 - Cross-compilation supported via environment variables
 
 **Impact**: Flexible but requires manual setup for CI/CD.
@@ -110,28 +110,28 @@
 
 ## 10. Versioning
 
-**Ambiguity**: How to version the GoForge tool itself?
+**Ambiguity**: How to version the GoFre tool itself?
 
 **Decision**:
 
 - Follow semantic versioning
 - Tag releases on GitHub
-- Use `go install` or `pip install goforge` for installation
+- Use `go install` or `pip install gofre` for installation
 
 **Impact**: Standard Go versioning practice.
 
 ## 11. PyPI Distribution
 
-**Ambiguity**: How should goforge itself be distributed via PyPI?
+**Ambiguity**: How should gofre itself be distributed via PyPI?
 
 **Decision**:
 
-- Python wrapper (`goforge_pkg/`) finds and `exec`s the Go binary
+- Python wrapper (`gofre_pkg/`) finds and `exec`s the Go binary
 - Binary is compiled with `CGO_ENABLED=0` for static linking
 - setuptools with custom `build_py` command (not hatchling — build hooks require plugin registration)
-- Package name: `goforge` on PyPI, `goforge_pkg` as Python import
+- Package name: `gofre` on PyPI, `gofre_pkg` as Python import
 
-**Impact**: `pip install goforge` compiles the Go binary and installs the `goforge` CLI on the user's PATH.
+**Impact**: `pip install gofre` compiles the Go binary and installs the `gofre` CLI on the user's PATH.
 
 ## Open Questions
 
@@ -156,7 +156,7 @@
 1. **Async Support**: Add async/await support for Go functions
 2. **Type Hints**: Generate Python type hints from Go types
 3. **Documentation**: Auto-generate docs from Go comments
-4. **IDE Support**: Language server protocol for GoForge projects
+4. **IDE Support**: Language server protocol for GoFre projects
 5. **Multi-platform wheels**: Cross-compile for all platforms in a single build (currently builds for current platform
    only)
 

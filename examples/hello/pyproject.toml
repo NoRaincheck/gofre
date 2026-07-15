@@ -1,15 +1,15 @@
 [build-system]
-requires = ["goforge>=0.1.0"]
-build-backend = "goforge.build"
+requires = ["gofre>=0.1.0"]
+build-backend = "gofre.build"
 
 [project]
-name = "goforge-hello"
+name = "gofre-hello"
 version = "0.1.0"
-description = "GoForge hello world example"
+description = "GoFre hello world example"
 requires-python = ">=3.8"
 dependencies = ["cffi>=1.0.0"]
 
-[tool.goforge]
+[tool.gofre]
 module = "github.com/grackin/examples/hello"
 bindings = "cffi"
 pkg-dir = "pkg/core"
