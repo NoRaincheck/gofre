@@ -126,7 +126,9 @@ goforge/
 ├── internal/               # Library code
 │   ├── bindings/           # Go parser + Python code generator
 │   ├── build/              # Build system (Go + wheel)
-│   └── config/             # Config loader (pyproject.toml)
+│   ├── config/             # Config loader (pyproject.toml)
+│   ├── pocketpy/           # Embedded pocketpy interpreter (excluded with no_pocketpy tag)
+│   └── gomod/              # Bridge modules (http, json)
 └── tests/                  # Unit tests
 ```
 
@@ -195,7 +197,36 @@ dependencies = ["cffi>=1.0.0"]
 module = "github.com/user/my-package"
 bindings = "cffi"
 pkg-dir = "pkg"
+build-tags = []
 ```
+
+### Build Tags
+
+Use `build-tags` to pass custom Go build tags to `go build`. This is useful for excluding parts of the codebase from
+compilation.
+
+```toml
+[tool.goforge]
+module = "github.com/user/my-package"
+build-tags = ["no_pocketpy"]
+```
+
+This produces:
+
+```
+go build -buildmode=c-shared -tags no_pocketpy -o output ./cmd/
+```
+
+GoForge ships with the `no_pocketpy` build tag, which excludes the embedded pocketpy interpreter and related bridge
+code. Files excluded by build tags:
+
+- `internal/pocketpy/*` — pocketpy Go wrapper and C source
+- `internal/gomod/http/register.go` — pocketpy HTTP bridge
+- `internal/gomod/json/register.go` — pocketpy JSON bridge
+- `examples/webserver_binary/` — pocketpy-based webserver example
+
+When `no_pocketpy` is set, the `cffi` exports in `http/cffi_exports.go` and `json/cffi_exports.go` remain available. If
+your `cmd/` imports pocketpy directly, the build will fail with a missing import error.
 
 ## Contributing
 
