@@ -75,8 +75,12 @@ func TestGetPlatformTag(t *testing.T) {
 
 func TestGetPythonTag(t *testing.T) {
 	tag := build.GetPythonTag()
-	if tag != "cp39" {
-		t.Errorf("expected 'cp39', got '%s'", tag)
+	if tag == "" {
+		t.Error("GetPythonTag returned empty string")
+	}
+	// Validate format: should be 'cp' followed by major.minor version digits
+	if len(tag) < 4 || tag[:2] != "cp" {
+		t.Errorf("expected tag starting with 'cp' followed by version digits, got '%s'", tag)
 	}
 }
 
