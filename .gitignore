@@ -18,6 +18,13 @@ goforge/examples/*/webserver_binary
 /build/
 /dist/
 goforge_pkg/bin/
+
+# Benchmark artifacts
+examples/webserver/benchmarks/results/
+examples/webserver/benchmarks/servers/benchmark.db*
+examples/webserver/benchmarks/servers/server_pure_go
+examples/webserver/benchmarks/servers/go.mod
+examples/webserver/benchmarks/servers/go.sum
 examples/*/build/
 examples/*/dist/
 
