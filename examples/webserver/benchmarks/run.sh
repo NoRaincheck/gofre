@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Benchmark runner — plaintext, json, and SQLite I/O endpoints with concurrency sweep.
 # Compatible with macOS bash 3.2.
+#
+# Usage:
+#   bash run.sh                        # run all servers
+#   bash run.sh --servers pocketpy     # run only pocketpy
+#   bash run.sh --servers pocketpy,pure_go  # run pocketpy and pure_go
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SERVERS_DIR="$SCRIPT_DIR/servers"
@@ -9,6 +14,29 @@ mkdir -p "$RESULTS_DIR"
 
 NUM_REQUESTS=5000
 CONCURRENCY_LEVELS=(1 5 10 25 50 100)
+SERVER_FILTER=""
+
+# Parse arguments
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --servers)
+            SERVER_FILTER="$2"
+            shift 2
+            ;;
+        --requests)
+            NUM_REQUESTS="$2"
+            shift 2
+            ;;
+        --concurrency)
+            IFS=',' read -ra CONCURRENCY_LEVELS <<< "$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 BOLD='\033[1m'; CYAN='\033[0;36m'; NC='\033[0m'
@@ -56,12 +84,12 @@ start_server() {
         fi
         lsof_retries=$((lsof_retries - 1))
     done
-    echo "$server_pid" > "$RESULTS_DIR/${name}.pid"
 
     local retries=30
     while [ $retries -gt 0 ]; do
         if curl -s "http://localhost:$port/plaintext" > /dev/null 2>&1 || \
            curl -s "http://localhost:$port/db" > /dev/null 2>&1; then
+            echo "$server_pid" > "$RESULTS_DIR/${name}.pid"
             echo -e "${GREEN}[OK]${NC} Server '$name' ready on port $port (PID: $server_pid)" >&2
             echo "$server_pid"
             return 0
@@ -69,6 +97,8 @@ start_server() {
         retries=$((retries - 1))
         sleep 0.5
     done
+    # Server failed — remove PID file so benchmarks skip it
+    rm -f "$RESULTS_DIR/${name}.pid"
     echo -e "${RED}[FAIL]${NC} Server '$name' failed to start on port $port" >&2
     cat "$RESULTS_DIR/${name}.log" >&2
     return 1
@@ -144,6 +174,22 @@ main() {
     printf "pocketpy\t8086\t%s\n" "$POCKETPY_BINARY" >> "$SERVERS_FILE"
     printf "cpython_gohttp\t8087\tpython3 %s/server_cpython_gohttp.py\n" "$SERVERS_DIR" >> "$SERVERS_FILE"
 
+    # Apply server filter if --servers was given
+    if [ -n "$SERVER_FILTER" ]; then
+        FILTERED="$RESULTS_DIR/.servers_filtered"
+        > "$FILTERED"
+        IFS=',' read -ra FILTER_NAMES <<< "$SERVER_FILTER"
+        while IFS=$'\t' read -r name port cmd; do
+            for fn in "${FILTER_NAMES[@]}"; do
+                if [ "$name" = "$fn" ]; then
+                    printf "%s\t%s\t%s\n" "$name" "$port" "$cmd" >> "$FILTERED"
+                fi
+            done
+        done < "$SERVERS_FILE"
+        mv "$FILTERED" "$SERVERS_FILE"
+        log "Server filter: ${FILTER_NAMES[*]}"
+    fi
+
     # Tests: name<TAB>method<TAB>path<TAB>body
     printf "plaintext\tGET\t/plaintext\t0\n" > "$TESTS_FILE"
     printf "json\tGET\t/json\t0\n" >> "$TESTS_FILE"
@@ -177,12 +223,13 @@ main() {
     log "Starting servers..."
     SERVER_COUNT=0
     while IFS=$'\t' read -r name port cmd; do
-        pid=$(start_server "$name" "$port" "$cmd" 2>&1 || true)
-        if [ -n "$pid" ] && echo "$pid" | grep -q '^[0-9]'; then
-            echo "$pid" >> "$RESULTS_DIR/.pids"
+        start_server "$name" "$port" "$cmd" >&2 || true
+        if [ -f "$RESULTS_DIR/${name}.pid" ]; then
+            local srv_pid
+            srv_pid=$(cat "$RESULTS_DIR/${name}.pid")
+            echo "$srv_pid" >> "$RESULTS_DIR/.pids"
             SERVER_COUNT=$((SERVER_COUNT + 1))
         else
-            echo "" >&2
             echo -e "${YELLOW}[SKIP]${NC} Server '$name' failed to start, skipping" >&2
         fi
     done < "$SERVERS_FILE"
