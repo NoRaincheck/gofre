@@ -18,22 +18,35 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 
 	_ "modernc.org/sqlite"
 )
 
-var db *sql.DB
+var (
+	db          *sql.DB
+	dbQueryRow  *sql.Stmt
+	dbQueryRows *sql.Stmt
+)
 
 func init() {
 	var err error
-	db, err = sql.Open("sqlite", "benchmark_go.db?_journal_mode=WAL&_busy_timeout=5000&_synchronous=NORMAL")
+	db, err = sql.Open("sqlite", "benchmark_go.db?_journal_mode=WAL&_busy_timeout=5000&_synchronous=NORMAL&_txlock=immediate")
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
+	db.SetMaxOpenConns(runtime.NumCPU())
+	db.SetMaxIdleConns(runtime.NumCPU())
 	seedDB()
+	dbQueryRow, err = db.Prepare("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT 1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	dbQueryRows, err = db.Prepare("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT ?")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func seedDB() {
@@ -106,7 +119,7 @@ func handleJSON(w http.ResponseWriter, r *http.Request) {
 // ── DB Single Query ───────────────────────────────────────────────
 func handleDB(w http.ResponseWriter, r *http.Request) {
 	var id, randomNumber int64
-	err := db.QueryRow("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT 1").Scan(&id, &randomNumber)
+	err := dbQueryRow.QueryRow().Scan(&id, &randomNumber)
 	if err != nil {
 		http.Error(w, `{"error":"`+err.Error()+`"}`, 500)
 		return
@@ -126,7 +139,7 @@ func handleQueries(w http.ResponseWriter, r *http.Request) {
 			n = v
 		}
 	}
-	rows, err := db.Query("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT ?", n)
+	rows, err := dbQueryRows.Query(n)
 	if err != nil {
 		http.Error(w, `{"error":"`+err.Error()+`"}`, 500)
 		return

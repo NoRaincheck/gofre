@@ -3,6 +3,7 @@ package sqlbridge
 import (
 	"database/sql"
 	"math/rand"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -14,8 +15,12 @@ func OpenDB(path string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Single connection: the pocketpy Python VM is single-threaded (one goroutine
+	// processes all requests via channel dispatch in http/register.go), so only
+	// one db.Query() runs at a time. MaxOpenConns(1) matches this architecture.
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)
+	db.SetConnMaxLifetime(5 * time.Minute)
 	return db, nil
 }
 
