@@ -1,8 +1,8 @@
-"""CPython webserver using gojson (Go JSON) via cffi for JSON serialization.
+"""CPython webserver using Go HTTP (gohttp) via cffi for serving.
 
 Routes:
   GET  /plaintext   — Plain text response
-  GET  /json        — JSON serialization via Go
+  GET  /json        — JSON serialization
   GET  /db          — Single random row query
   GET  /queries     — Multiple random row queries
   POST /updates     — Update random rows
@@ -11,14 +11,11 @@ Usage: python3 server_cpython_gohttp.py [port]
 Requires: gofre build (in examples/webserver/)
 """
 
-import http.server
 import json
 import os
 import random
 import sqlite3
 import sys
-import threading
-import urllib.parse
 
 import cffi
 
@@ -37,25 +34,13 @@ if not os.path.exists(lib_path):
 ffi.cdef("""
     char* Dumps(char* obj);
     char* Loads(char* s);
+    int   HTTPCreateServer(void);
+    void  HTTPAddRoute(int serverID, char* method, char* path, int handlerID);
+    void  HTTPStartServer(int serverID, char* addr);
+    void  HTTPSetDispatch(void* fn);
 """)
 
 lib = ffi.dlopen(lib_path)
-
-
-def go_json_dumps(obj):
-    """Serialize a Python object to JSON string using Go."""
-    obj_str = json.dumps(obj)
-    c_str = ffi.new("char[]", obj_str.encode())
-    result = lib.Dumps(c_str)
-    return ffi.string(result).decode()
-
-
-def go_json_loads(s):
-    """Deserialize a JSON string to Python object using Go."""
-    c_str = ffi.new("char[]", s.encode())
-    result = lib.Loads(c_str)
-    return json.loads(ffi.string(result).decode())
-
 
 DB_PATH = "benchmark_cpython_gohttp.db"
 
@@ -76,125 +61,115 @@ def init_db():
 init_db()
 
 
-class BenchmarkHandler(http.server.BaseHTTPRequestHandler):
-    """HTTP handler with TFB benchmark endpoints using Go JSON via cffi."""
+# ── Handler functions ─────────────────────────────────────────────
 
-    def do_GET(self):
-        if self.path == "/plaintext":
-            self._handle_plaintext()
-        elif self.path == "/json":
-            self._handle_json()
-        elif self.path.startswith("/db"):
-            self._handle_db()
-        elif self.path.startswith("/queries"):
-            self._handle_queries()
-        else:
-            self._send_response(404, go_json_dumps({"error": "not found"}))
 
-    def do_POST(self):
-        if self.path == "/updates":
-            self._handle_updates()
-        else:
-            self._send_response(404, go_json_dumps({"error": "not found"}))
+def handle_plaintext(body):
+    return "Hello, World!"
 
-    def _handle_plaintext(self):
-        body = "Hello, World!"
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body.encode())
 
-    def _handle_json(self):
-        body = go_json_dumps(
-            {
-                "message": "Hello, World!",
-                "timestamp": 1234567890,
-                "random": 42,
-                "data": {
-                    "name": "benchmark",
-                    "version": "1.0.0",
-                    "features": ["json", "db", "template"],
-                    "metadata": {"host": "localhost", "port": 8080},
-                },
-            }
+def handle_json(body):
+    return json.dumps(
+        {
+            "message": "Hello, World!",
+            "timestamp": 1234567890,
+            "random": 42,
+            "data": {
+                "name": "benchmark",
+                "version": "1.0.0",
+                "features": ["json", "db", "template"],
+                "metadata": {"host": "localhost", "port": 8080},
+            },
+        }
+    )
+
+
+def handle_db(body):
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT 1").fetchone()
+    conn.close()
+    return json.dumps({"id": row[0], "randomNumber": row[1]})
+
+
+def handle_queries(body):
+    n = 1
+    if body:
+        for part in body.split("&"):
+            if part.startswith("N="):
+                try:
+                    n = max(1, min(500, int(part[2:])))
+                except ValueError:
+                    pass
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT ?", (n,)).fetchall()
+    conn.close()
+    return json.dumps([{"id": r[0], "randomNumber": r[1]} for r in rows])
+
+
+def handle_updates(body):
+    updates = json.loads(body)
+    conn = sqlite3.connect(DB_PATH)
+    for u in updates:
+        conn.execute(
+            "UPDATE world SET randomNumber = ? WHERE id = ?",
+            (u["randomNumber"], u["id"]),
         )
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body.encode())
-
-    def _handle_db(self):
-        conn = sqlite3.connect(DB_PATH)
-        row = conn.execute("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT 1").fetchone()
-        conn.close()
-        self._send_response(200, go_json_dumps({"id": row[0], "randomNumber": row[1]}))
-
-    def _handle_queries(self):
-        n = 1
-        if "?" in self.path:
-            qs = urllib.parse.urlparse(self.path).query
-            for part in qs.split("&"):
-                if part.startswith("N="):
-                    try:
-                        n = max(1, min(500, int(part[2:])))
-                    except ValueError:
-                        pass
-        conn = sqlite3.connect(DB_PATH)
-        rows = conn.execute("SELECT id, randomNumber FROM world ORDER BY RANDOM() LIMIT ?", (n,)).fetchall()
-        conn.close()
-        self._send_response(200, go_json_dumps([{"id": r[0], "randomNumber": r[1]} for r in rows]))
-
-    def _handle_updates(self):
-        length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(length).decode()
-        updates = go_json_loads(body)
-        conn = sqlite3.connect(DB_PATH)
-        for u in updates:
-            conn.execute(
-                "UPDATE world SET randomNumber = ? WHERE id = ?",
-                (u["randomNumber"], u["id"]),
-            )
-        conn.commit()
-        conn.close()
-        self._send_response(200, go_json_dumps(updates))
-
-    def _send_response(self, status, body):
-        body_bytes = body.encode()
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body_bytes)))
-        self.end_headers()
-        self.wfile.write(body_bytes)
-
-    def log_message(self, format, *args):
-        pass
+    conn.commit()
+    conn.close()
+    return json.dumps(updates)
 
 
-class ThreadedHTTPServer(http.server.HTTPServer):
-    allow_reuse_address = True
+# Handler dispatch table: handler_id -> handler function
+HANDLERS = {
+    0: handle_plaintext,
+    1: handle_json,
+    2: handle_db,
+    3: handle_queries,
+    4: handle_updates,
+}
 
-    def process_request(self, request, client_address):
-        t = threading.Thread(target=self._handle, args=(request, client_address))
-        t.daemon = True
-        t.start()
 
-    def _handle(self, request, client_address):
+# ── CFFI dispatch callback ────────────────────────────────────────
+# Signature: void dispatch(int handler_id, char* body, char* out_buf)
+
+
+@ffi.callback("void(int, char*, char*)")
+def dispatch(handler_id, body, out_buf):
+    body_str = ffi.string(body).decode() if body != ffi.NULL else ""
+    handler = HANDLERS.get(handler_id)
+    if handler is None:
+        result = json.dumps({"error": f"unknown handler {handler_id}"})
+    else:
         try:
-            self.finish_request(request, client_address)
-        except Exception:
-            self.handle_error(request, client_address)
-        finally:
-            self.shutdown_request(request)
+            result = handler(body_str)
+        except Exception as e:
+            result = json.dumps({"error": str(e)})
+    result_bytes = result.encode()
+    ffi.memmove(out_buf, result_bytes, len(result_bytes) + 1)
 
+
+# ── Server startup ────────────────────────────────────────────────
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8087
-    server = ThreadedHTTPServer(("0.0.0.0", port), BenchmarkHandler)
-    print(f"CPython+Go JSON benchmark server running on :{port}")
+
+    lib.HTTPSetDispatch(dispatch)
+    server_id = lib.HTTPCreateServer()
+
+    lib.HTTPAddRoute(server_id, b"GET", b"/plaintext", 0)
+    lib.HTTPAddRoute(server_id, b"GET", b"/json", 1)
+    lib.HTTPAddRoute(server_id, b"GET", b"/db", 2)
+    lib.HTTPAddRoute(server_id, b"GET", b"/queries", 3)
+    lib.HTTPAddRoute(server_id, b"POST", b"/updates", 4)
+
+    addr = f"0.0.0.0:{port}"
+    lib.HTTPStartServer(server_id, addr.encode())
+
+    print(f"CPython+Go HTTP benchmark server running on :{port}")
     try:
-        server.serve_forever()
+        import time
+
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\nShutting down...")
-        server.server_close()
